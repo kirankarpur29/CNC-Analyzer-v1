@@ -1,0 +1,1497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CNC Machining Analyzer</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+        body {
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #e0e0e0;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+        .section h2 {
+            margin-top: 0;
+            color: #3498db;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        input[type="file"] {
+            border: none;
+            padding: 10px 0;
+        }
+        input[type="number"] {
+            width: 100px;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 10px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        .features-container {
+            margin-top: 15px;
+        }
+        .feature-item {
+            padding: 10px;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+        }
+        .feature-item select, .feature-item input {
+            flex: 1;
+            min-width: 150px;
+        }
+        .remove-feature {
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .remove-feature:hover {
+            background-color: #c0392b;
+        }
+        .result-section {
+            margin-top: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #fff;
+        }
+        .result-card {
+            border-left: 4px solid #3498db;
+            padding: 15px;
+            margin-bottom: 15px;
+            background-color: #f8f9fa;
+        }
+        .result-title {
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #2c3e50;
+        }
+        .complexity-level {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 4px;
+            color: white;
+            font-weight: bold;
+        }
+        .level-1 { background-color: #2ecc71; }
+        .level-2 { background-color: #3498db; }
+        .level-3 { background-color: #f39c12; }
+        .level-4 { background-color: #e67e22; }
+        .level-5 { background-color: #e74c3c; }
+        .material-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        .material-table th, .material-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        .material-table th {
+            background-color: #f2f2f2;
+        }
+        .material-table tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        .tooltip {
+            position: relative;
+            display: inline-block;
+            cursor: pointer;
+            border-bottom: 1px dotted #666;
+        }
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 300px;
+            background-color: #333;
+            color: #fff;
+            text-align: left;
+            border-radius: 6px;
+            padding: 10px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+        .report-container {
+            margin-top: 30px;
+        }
+        .logo-container {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #3498db;
+        }
+        .download-btn {
+            background-color: #27ae60;
+        }
+        .download-btn:hover {
+            background-color: #219653;
+        }
+        .pdf-btn {
+            background-color: #e74c3c;
+        }
+        .pdf-btn:hover {
+            background-color: #c0392b;
+        }
+        .reset-btn {
+            background-color: #f39c12;
+        }
+        .reset-btn:hover {
+            background-color: #d35400;
+        }
+        @media print {
+            .no-print {
+                display: none;
+            }
+            body, .container {
+                margin: 0;
+                padding: 0;
+                background-color: white;
+                box-shadow: none;
+            }
+            .section, .result-section {
+                break-inside: avoid;
+                border: none;
+                padding: 10px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo-container">
+            <div class="logo">CNC MACHINING ANALYZER</div>
+        </div>
+        
+        <div class="section no-print">
+            <h2>Upload 3D Model</h2>
+            <div class="form-group">
+                <label for="model-file">Upload CAD Model (STL, STEP, IGES)</label>
+                <input type="file" id="model-file" accept=".stl,.step,.stp,.iges,.igs">
+                <p id="file-info">No file selected</p>
+            </div>
+        </div>
+
+        <div class="section no-print">
+            <h2>Part Information</h2>
+            <div class="form-group">
+                <label for="part-name">Part Name/Description</label>
+                <input type="text" id="part-name" placeholder="Enter part name">
+            </div>
+            <div class="form-group">
+                <label for="part-dimensions">Overall Dimensions (mm)</label>
+                <div style="display: flex; gap: 10px;">
+                    <input type="number" id="part-length" placeholder="Length" min="0" step="0.1">
+                    <input type="number" id="part-width" placeholder="Width" min="0" step="0.1">
+                    <input type="number" id="part-height" placeholder="Height" min="0" step="0.1">
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="material-select">Material</label>
+                <select id="material-select">
+                    <option value="">Select Material</option>
+                    <optgroup label="Aluminum Alloys">
+                        <option value="aluminum-6061">Aluminum 6061-T6</option>
+                        <option value="aluminum-7075">Aluminum 7075-T6</option>
+                        <option value="aluminum-5052">Aluminum 5052</option>
+                    </optgroup>
+                    <optgroup label="Steels">
+                        <option value="steel-1018">Mild Steel 1018</option>
+                        <option value="steel-4140">Alloy Steel 4140</option>
+                        <option value="steel-stainless-304">Stainless Steel 304</option>
+                        <option value="steel-stainless-316">Stainless Steel 316</option>
+                        <option value="steel-tool-a2">Tool Steel A2</option>
+                    </optgroup>
+                    <optgroup label="Other Metals">
+                        <option value="titanium-6al4v">Titanium Ti-6Al-4V</option>
+                        <option value="brass-c360">Brass C360</option>
+                        <option value="copper-c101">Copper C101</option>
+                    </optgroup>
+                    <optgroup label="Plastics">
+                        <option value="plastic-delrin">Delrin/POM</option>
+                        <option value="plastic-nylon">Nylon (PA6/PA66)</option>
+                        <option value="plastic-pc">Polycarbonate (PC)</option>
+                        <option value="plastic-peek">PEEK</option>
+                        <option value="plastic-abs">ABS</option>
+                    </optgroup>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="quantity">Quantity Required</label>
+                <input type="number" id="quantity" min="1" value="1">
+            </div>
+        </div>
+
+        <div class="section no-print">
+            <h2>Feature Analysis</h2>
+            <p>Add key features of your part for analysis:</p>
+            <div class="features-container" id="features-container">
+                <!-- Features will be added here -->
+            </div>
+            <button type="button" id="add-feature-btn">Add Feature</button>
+        </div>
+
+        <div class="section no-print">
+            <h2>Manufacturing Requirements</h2>
+            <div class="form-group">
+                <label for="tolerance-select">General Tolerance Required</label>
+                <select id="tolerance-select">
+                    <option value="it6">IT6 - Precision (±0.05mm)</option>
+                    <option value="it7">IT7 - High (±0.1mm)</option>
+                    <option value="it8" selected>IT8 - Medium (±0.2mm)</option>
+                    <option value="it10">IT10 - Coarse (±0.5mm)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="surface-finish">Required Surface Finish (Ra)</label>
+                <select id="surface-finish">
+                    <option value="0.1">Ra 0.1μm - Mirror Finish</option>
+                    <option value="0.4">Ra 0.4μm - Very Smooth</option>
+                    <option value="0.8">Ra 0.8μm - Smooth</option>
+                    <option value="1.6" selected>Ra 1.6μm - Medium-Fine</option>
+                    <option value="3.2">Ra 3.2μm - Medium</option>
+                    <option value="6.3">Ra 6.3μm - Medium-Rough</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Special Requirements</label>
+                <div>
+                    <input type="checkbox" id="req-heat-treatment">
+                    <label for="req-heat-treatment">Heat Treatment Required</label>
+                </div>
+                <div>
+                    <input type="checkbox" id="req-threaded">
+                    <label for="req-threaded">Threaded Features</label>
+                </div>
+                <div>
+                    <input type="checkbox" id="req-thin-walls">
+                    <label for="req-thin-walls">Thin Walls (< 1mm)</label>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="notes">Additional Notes/Requirements</label>
+                <textarea id="notes" rows="3" placeholder="Enter any special requirements or notes"></textarea>
+            </div>
+        </div>
+
+        <div class="no-print" style="text-align: center; margin: 20px 0;">
+            <button type="button" id="analyze-btn">Analyze Part</button>
+        </div>
+
+        <div id="results" style="display: none;">
+            <div class="result-section">
+                <h2>Manufacturing Analysis Results</h2>
+                
+                <div class="result-card">
+                    <div class="result-title">Complexity Assessment</div>
+                    <div id="complexity-result">
+                        Overall Complexity: <span class="complexity-level level-2" id="complexity-level">Level 2 (Moderate)</span>
+                    </div>
+                    <div id="complexity-details" style="margin-top: 10px;">
+                        This part has features on multiple faces requiring multiple setups. Key complexity factors include medium pockets and some angled features.
+                    </div>
+                </div>
+                
+                <div class="result-card">
+                    <div class="result-title">Recommended Machine Type</div>
+                    <div id="machine-result">
+                        Primary Recommendation: <strong id="primary-machine">4-Axis Machining Center</strong><br>
+                        Alternative Option: <span id="alt-machine">3+2 Axis Machining Center</span>
+                    </div>
+                    <div id="machine-details" style="margin-top: 10px;">
+                        A 4-axis machine is recommended due to the need to access features on multiple sides of the part. This will minimize the number of setups required and improve overall accuracy.
+                    </div>
+                </div>
+                
+                <div class="result-card">
+                    <div class="result-title">Material Considerations</div>
+                    <div id="material-result">
+                        Selected Material: <strong id="selected-material">Aluminum 6061-T6</strong>
+                    </div>
+                    <table class="material-table" id="material-details">
+                        <tr>
+                            <th>Property</th>
+                            <th>Value</th>
+                            <th>Machining Implication</th>
+                        </tr>
+                        <tr>
+                            <td>Machinability Rating</td>
+                            <td>Excellent (90-100%)</td>
+                            <td>Easy to machine with high MRR</td>
+                        </tr>
+                        <tr>
+                            <td>Recommended Cutting Speed</td>
+                            <td>500-1000 m/min</td>
+                            <td>High cutting speeds possible</td>
+                        </tr>
+                        <tr>
+                            <td>Tool Recommendation</td>
+                            <td>2-3 flute carbide end mills</td>
+                            <td>Optimized for aluminum machining</td>
+                        </tr>
+                    </table>
+                </div>
+                
+                <div class="result-card">
+                    <div class="result-title">Manufacturing Process Plan</div>
+                    <div id="process-plan">
+                        <strong>Estimated Setups Required:</strong> <span id="setup-count">2</span><br>
+                        <strong>Special Fixturing Requirements:</strong> <span id="fixturing-req">Standard vise with soft jaws</span><br>
+                        <strong>Estimated Machining Time:</strong> <span id="machining-time">2.5 hours</span><br>
+                        <br>
+                        <strong>Recommended Operation Sequence:</strong>
+                        <ol id="operation-sequence">
+                            <li>Setup 1: Face milling of primary datum surfaces</li>
+                            <li>Setup 1: Rough and finish machine features on primary side</li>
+                            <li>Setup 2: Secure on secondary datum, machine remaining features</li>
+                            <li>Deburr and finish all edges</li>
+                        </ol>
+                    </div>
+                </div>
+                
+                <div class="result-card">
+                    <div class="result-title">Quality Control Recommendations</div>
+                    <div id="quality-plan">
+                        <strong>Critical Features to Inspect:</strong>
+                        <ul id="inspection-features">
+                            <li>Position tolerance of mounting holes</li>
+                            <li>Flatness of sealing surfaces</li>
+                            <li>Surface finish on precision fits</li>
+                        </ul>
+                        <strong>Recommended Inspection Method:</strong> <span id="inspection-method">CMM for critical dimensions, surface roughness tester for finish requirements</span>
+                    </div>
+                </div>
+                
+                <div class="result-card">
+                    <div class="result-title">Cost Estimation</div>
+                    <div id="cost-estimate">
+                        <table class="material-table">
+                            <tr>
+                                <th>Cost Component</th>
+                                <th>Estimated Cost (₹)</th>
+                            </tr>
+                            <tr>
+                                <td>Raw Material</td>
+                                <td id="material-cost">₹2,500</td>
+                            </tr>
+                            <tr>
+                                <td>Machine Time</td>
+                                <td id="machine-cost">₹3,750</td>
+                            </tr>
+                            <tr>
+                                <td>Setup/Programming</td>
+                                <td id="setup-cost">₹1,500</td>
+                            </tr>
+                            <tr>
+                                <td>Tooling</td>
+                                <td id="tooling-cost">₹500</td>
+                            </tr>
+                            <tr>
+                                <td>Quality Inspection</td>
+                                <td id="inspection-cost">₹750</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Total Estimated Cost</strong></td>
+                                <td><strong id="total-cost">₹9,000</strong></td>
+                            </tr>
+                            <tr>
+                                <td>Unit Cost (based on quantity)</td>
+                                <td id="unit-cost">₹9,000</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+                
+                <div class="result-card">
+                    <div class="result-title">Manufacturability Concerns & Recommendations</div>
+                    <div id="recommendations">
+                        <ul id="recommendation-list">
+                            <li>Consider increasing the corner radius from 1mm to 2mm to improve tool life and reduce machining time</li>
+                            <li>Adding 1° draft to deep pocket walls would improve surface finish and reduce tool wear</li>
+                            <li>Consider using standard hole sizes where possible to reduce the need for special tooling</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div style="text-align: center; margin: 30px 0 10px 0;">
+                    <button type="button" id="pdf-btn" class="pdf-btn">Download as PDF</button>
+                    <button type="button" id="reset-btn" class="reset-btn">Start New Analysis</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Feature management
+            const featuresContainer = document.getElementById('features-container');
+            const addFeatureBtn = document.getElementById('add-feature-btn');
+            let featureCount = 0;
+            
+            // File upload handling
+            const fileInput = document.getElementById('model-file');
+            const fileInfo = document.getElementById('file-info');
+            
+            fileInput.addEventListener('change', function(e) {
+                if (this.files && this.files[0]) {
+                    const file = this.files[0];
+                    fileInfo.textContent = `File selected: ${file.name} (${formatFileSize(file.size)})`;
+                    
+                    // Auto-populate part name from filename
+                    const partName = document.getElementById('part-name');
+                    if (!partName.value) {
+                        partName.value = file.name.split('.')[0];
+                    }
+                } else {
+                    fileInfo.textContent = 'No file selected';
+                }
+            });
+            
+            function formatFileSize(bytes) {
+                if (bytes < 1024) return bytes + ' bytes';
+                else if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+                else return (bytes / 1048576).toFixed(1) + ' MB';
+            }
+            
+            // Add feature handler
+            addFeatureBtn.addEventListener('click', function() {
+                addFeature();
+            });
+            
+            function addFeature() {
+                featureCount++;
+                const featureItem = document.createElement('div');
+                featureItem.className = 'feature-item';
+                featureItem.innerHTML = `
+                    <select class="feature-type">
+                        <option value="">Select Feature Type</option>
+                        <option value="hole">Hole</option>
+                        <option value="pocket">Pocket</option>
+                        <option value="slot">Slot</option>
+                        <option value="contour">External Contour</option>
+                        <option value="plane">Planar Surface</option>
+                        <option value="thread">Threaded Feature</option>
+                        <option value="undercut">Undercut</option>
+                    </select>
+                    <input type="text" class="feature-dims" placeholder="Dimensions (e.g., Ø10×20mm)">
+                    <select class="feature-complexity">
+                        <option value="1">Level 1 - Simple</option>
+                        <option value="2">Level 2 - Moderate</option>
+                        <option value="3">Level 3 - Complex</option>
+                        <option value="4">Level 4 - Very Complex</option>
+                        <option value="5">Level 5 - Extremely Complex</option>
+                    </select>
+                    <input type="text" class="feature-tolerance" placeholder="Tolerance (e.g., ±0.05mm)">
+                    <button type="button" class="remove-feature">Remove</button>
+                `;
+                
+                featuresContainer.appendChild(featureItem);
+                
+                // Add event listener to remove button
+                featureItem.querySelector('.remove-feature').addEventListener('click', function() {
+                    featuresContainer.removeChild(featureItem);
+                });
+                
+                // Add event listeners to update complexity based on feature type
+                const featureType = featureItem.querySelector('.feature-type');
+                const featureComplexity = featureItem.querySelector('.feature-complexity');
+                
+                featureType.addEventListener('change', function() {
+                    // Set default complexity based on feature type
+                    switch(this.value) {
+                        case 'hole':
+                            featureComplexity.value = '1';
+                            break;
+                        case 'pocket':
+                            featureComplexity.value = '2';
+                            break;
+                        case 'slot':
+                            featureComplexity.value = '2';
+                            break;
+                        case 'contour':
+                            featureComplexity.value = '2';
+                            break;
+                        case 'plane':
+                            featureComplexity.value = '1';
+                            break;
+                        case 'thread':
+                            featureComplexity.value = '3';
+                            break;
+                        case 'undercut':
+                            featureComplexity.value = '4';
+                            break;
+                    }
+                });
+            }
+            
+            // Add a couple of default features
+            addFeature();
+            addFeature();
+            
+            // Analyze button handler
+            const analyzeBtn = document.getElementById('analyze-btn');
+            const resultsDiv = document.getElementById('results');
+            
+            analyzeBtn.addEventListener('click', function() {
+                analyzePartForManufacturing();
+                resultsDiv.style.display = 'block';
+                window.scrollTo({
+                    top: resultsDiv.offsetTop,
+                    behavior: 'smooth'
+                });
+            });
+            
+            // Add event listeners for buttons after results
+            document.addEventListener('DOMContentLoaded', function() {
+                document.getElementById('pdf-btn').addEventListener('click', function() {
+                    generatePDF();
+                });
+                
+                document.getElementById('reset-btn').addEventListener('click', function() {
+                    resetAnalysis();
+                });
+            });
+            
+            function resetAnalysis() {
+                // Clear form fields
+                document.getElementById('part-name').value = '';
+                document.getElementById('part-length').value = '';
+                document.getElementById('part-width').value = '';
+                document.getElementById('part-height').value = '';
+                document.getElementById('material-select').value = '';
+                document.getElementById('quantity').value = '1';
+                document.getElementById('notes').value = '';
+                
+                // Reset file input
+                document.getElementById('file-info').textContent = 'No file selected';
+                document.getElementById('model-file').value = '';
+                
+                // Clear features
+                const featuresContainer = document.getElementById('features-container');
+                featuresContainer.innerHTML = '';
+                addFeature();
+                addFeature();
+                
+                // Reset checkboxes
+                document.getElementById('req-heat-treatment').checked = false;
+                document.getElementById('req-threaded').checked = false;
+                document.getElementById('req-thin-walls').checked = false;
+                
+                // Reset dropdowns to defaults
+                document.getElementById('tolerance-select').value = 'it8';
+                document.getElementById('surface-finish').value = '1.6';
+                
+                // Hide results
+                resultsDiv.style.display = 'none';
+                
+                // Scroll to top
+                window.scrollTo({
+                    top: 0,
+                    behavior: 'smooth'
+                });
+            }
+            
+            function analyzePartForManufacturing() {
+                // Gather input data
+                const partName = document.getElementById('part-name').value || 'Unnamed Part';
+                const partLength = parseFloat(document.getElementById('part-length').value) || 100;
+                const partWidth = parseFloat(document.getElementById('part-width').value) || 80;
+                const partHeight = parseFloat(document.getElementById('part-height').value) || 50;
+                const materialSelect = document.getElementById('material-select');
+                const material = materialSelect.value || 'aluminum-6061';
+                const materialText = materialSelect.options[materialSelect.selectedIndex].text || 'Aluminum 6061-T6';
+                const quantity = parseInt(document.getElementById('quantity').value) || 1;
+                const tolerance = document.getElementById('tolerance-select').value;
+                const surfaceFinish = parseFloat(document.getElementById('surface-finish').value);
+                const hasHeatTreatment = document.getElementById('req-heat-treatment').checked;
+                const hasThreadedFeatures = document.getElementById('req-threaded').checked;
+                const hasThinWalls = document.getElementById('req-thin-walls').checked;
+                const notes = document.getElementById('notes').value;
+                
+                // Gather features
+                const features = [];
+                const featureItems = document.querySelectorAll('.feature-item');
+                featureItems.forEach(function(item) {
+                    const type = item.querySelector('.feature-type').value;
+                    if (type) {
+                        features.push({
+                            type: type,
+                            dimensions: item.querySelector('.feature-dims').value,
+                            complexity: parseInt(item.querySelector('.feature-complexity').value),
+                            tolerance: item.querySelector('.feature-tolerance').value
+                        });
+                    }
+                });
+                
+                // Calculate overall complexity
+                let complexityScore = calculateComplexity(features, partLength, partWidth, partHeight, 
+                    tolerance, surfaceFinish, hasHeatTreatment, hasThreadedFeatures, hasThinWalls);
+                
+                // Update results
+                updateComplexityResult(complexityScore);
+                updateMachineRecommendation(complexityScore, features);
+                updateMaterialInfo(material, materialText);
+                updateProcessPlan(complexityScore, features, quantity);
+                updateQualityPlan(features, tolerance, surfaceFinish);
+                updateCostEstimate(material, complexityScore, features, quantity, partLength, partWidth, partHeight);
+                updateRecommendations(features, material, complexityScore);
+            }
+            
+            function calculateComplexity(features, length, width, height, tolerance, surfaceFinish, 
+                hasHeatTreatment, hasThreadedFeatures, hasThinWalls) {
+                
+                // Base score from 1-5
+                let score = 1.0;
+                
+                // Add for features
+                if (features.length > 0) {
+                    let featureSum = 0;
+                    features.forEach(function(feature) {
+                        featureSum += feature.complexity;
+                    });
+                    let featureAvg = featureSum / features.length;
+                    score += featureAvg * 0.5; // Feature complexity contributes 50% of score
+                }
+                
+                // Add for part dimensions/aspect ratio
+                const aspectRatio = Math.max(length, width, height) / Math.min(length, width, height);
+                if (aspectRatio > 5) score += 0.5;
+                
+                // Add for tolerance requirements
+                if (tolerance === 'it6') score += 0.8;
+                else if (tolerance === 'it7') score += 0.4;
+                
+                // Add for surface finish
+                if (surfaceFinish <= 0.2) score += 0.7;
+                else if (surfaceFinish <= 0.8) score += 0.3;
+                
+                // Add for special requirements
+                if (hasHeatTreatment) score += 0.3;
+                if (hasThreadedFeatures) score += 0.4;
+                if (hasThinWalls) score += 0.7;
+                
+                // Cap at 5
+                return Math.min(Math.round(score * 10) / 10, 5);
+            }
+            
+            function updateComplexityResult(score) {
+                const complexityLevel = document.getElementById('complexity-level');
+                const complexityDetails = document.getElementById('complexity-details');
+                
+                let levelText, levelClass, details;
+                
+                if (score <= 1.5) {
+                    levelText = 'Level 1 (Simple)';
+                    levelClass = 'level-1';
+                    details = 'This part consists of simple features that can be machined in a single setup. Standard tooling and basic fixturing will be sufficient.';
+                } else if (score <= 2.5) {
+                    levelText = 'Level 2 (Moderate)';
+                    levelClass = 'level-2';
+                    details = 'This part has features on multiple faces requiring multiple setups. Standard tooling with some specialized fixtures may be needed.';
+                } else if (score <= 3.5) {
+                    levelText = 'Level 3 (Complex)';
+                    levelClass = 'level-3';
+                    details = 'This part has complex geometries including compound angles or deep pockets. Specialized tooling and careful setup planning will be required.';
+                } else if (score <= 4.5) {
+                    levelText = 'Level 4 (Very Complex)';
+                    levelClass = 'level-4';
+                    details = 'This part has highly complex features including contoured surfaces, tight tolerances, and challenging geometries requiring advanced machining strategies.';
+                } else {
+                    levelText = 'Level 5 (Extremely Complex)';
+                    levelClass = 'level-5';
+                    details = 'This part has extremely challenging features with very tight tolerances, intricate internal features, and thin walls requiring specialized processes.';
+                }
+                
+                complexityLevel.textContent = levelText;
+                complexityLevel.className = 'complexity-level ' + levelClass;
+                complexityDetails.textContent = details;
+            }
+            
+            function updateMachineRecommendation(complexity, features) {
+                const primaryMachine = document.getElementById('primary-machine');
+                const altMachine = document.getElementById('alt-machine');
+                const machineDetails = document.getElementById('machine-details');
+                
+                let primary, alternative, details;
+                
+                // Check if part has rotational features
+                const hasRotationalFeatures = features.some(f => f.type === 'hole' || f.type === 'thread');
+                const hasContours = features.some(f => f.type === 'contour');
+                const hasUndercuts = features.some(f => f.type === 'undercut');
+                
+                if (complexity <= 1.5) {
+                    primary = '3-Axis Machining Center';
+                    alternative = '4-Axis Indexing';
+                    details = 'A 3-axis machine is sufficient for this part due to its simple geometry and features. All features can be accessed with standard tooling in minimal setups.';
+                } else if (complexity <= 2.5) {
+                    primary = '4-Axis Machining Center';
+                    alternative = '3+2 Axis Machining Center';
+                    details = 'A 4-axis machine is recommended due to the need to access features on multiple sides of the part. This will minimize the number of setups required and improve overall accuracy.';
+                } else if (complexity <= 3.5) {
+                    if (hasUndercuts) {
+                        primary = '3+2 Axis Machining Center';
+                        alternative = '5-Axis Simultaneous';
+                        details = 'The complex geometries and compound angles require 3+2 axis positioning capabilities. This approach allows for machining at various angles while maintaining rigidity.';
+                    } else {
+                        primary = '4-Axis Continuous';
+                        alternative = '3+2 Axis Machining Center';
+                        details = 'The 4-axis continuous capability is recommended for the angled features and complex geometries. This reduces the number of setups and improves overall accuracy.';
+                    }
+                } else if (complexity <= 4.5) {
+                    primary = '5-Axis Simultaneous';
+                    alternative = '5-Axis Positional + EDM';
+                    details = 'The complex contoured surfaces and tight tolerances require 5-axis simultaneous machining capabilities. This machine type can access all features in minimal setups.';
+                } else {
+                    primary = '5-Axis + Specialized Processes';
+                    alternative = 'Multi-process Machine';
+                    details = 'This extremely complex part requires 5-axis simultaneous machining plus specialized processes like EDM or precision grinding to achieve the required tolerances and features.';
+                }
+                
+                // Special case for turned parts
+                if (hasRotationalFeatures && !hasContours && complexity <= 3) {
+                    primary = 'CNC Turning Center';
+                    alternative = 'Turn-Mill Center';
+                    details = 'This part is primarily rotational and can be most efficiently produced on a turning center. The cylindrical features are dominant in the design.';
+                } else if (hasRotationalFeatures && hasContours) {
+                    primary = 'Turn-Mill Center';
+                    alternative = '5-Axis Machining Center';
+                    details = 'A Turn-Mill center is ideal for this part as it combines both rotational and prismatic features. This reduces the number of setups and improves feature-to-feature accuracy.';
+                }
+                
+                primaryMachine.textContent = primary;
+                altMachine.textContent = alternative;
+                machineDetails.textContent = details;
+            }
+            
+            function updateMaterialInfo(material, materialText) {
+                const selectedMaterial = document.getElementById('selected-material');
+                const materialDetails = document.getElementById('material-details');
+                
+                selectedMaterial.textContent = materialText;
+                
+                // Clear existing rows except header
+                while (materialDetails.rows.length > 1) {
+                    materialDetails.deleteRow(1);
+                }
+                
+                // Add material-specific information
+                let properties = [];
+                
+                if (material.includes('aluminum')) {
+                    properties = [
+                        ['Machinability Rating', 'Excellent (90-100%)', 'Easy to machine with high MRR'],
+                        ['Recommended Cutting Speed', '500-1000 m/min', 'High cutting speeds possible'],
+                        ['Tool Recommendation', '2-3 flute carbide end mills', 'Optimized for aluminum machining'],
+                        ['Coolant Requirement', 'Required', 'Prevents material buildup on tool'],
+                        ['Heat Treatment', material.includes('7075') ? 'T6 Temper - Consider stress relief' : 'Not typically required', 'Affects dimensional stability']
+                    ];
+                } else if (material.includes('steel-1018') || material.includes('steel-4140')) {
+                    properties = [
+                        ['Machinability Rating', material.includes('1018') ? 'Good (70%)' : 'Moderate (50-60%)', 'More difficult than aluminum'],
+                        ['Recommended Cutting Speed', '150-250 m/min', 'Moderate cutting speeds'],
+                        ['Tool Recommendation', '4+ flute carbide with coating', 'Coated tools for heat resistance'],
+                        ['Coolant Requirement', 'Required', 'Manages heat and extends tool life'],
+                        ['Heat Treatment', material.includes('4140') ? 'Consider stress relief' : 'Not typically required', 'Affects dimensional stability']
+                    ];
+                } else if (material.includes('stainless')) {
+                    properties = [
+                        ['Machinability Rating', 'Poor to Moderate (30-60%)', 'Challenging due to work hardening'],
+                        ['Recommended Cutting Speed', '100-150 m/min', 'Lower speeds to manage heat'],
+                        ['Tool Recommendation', '4+ flute variable pitch carbide', 'Reduces chatter in stainless'],
+                        ['Coolant Requirement', 'High pressure required', 'Critical for chip evacuation'],
+                        ['Work Hardening', 'High tendency', 'Use sharp tools and avoid dwelling']
+                    ];
+                } else if (material.includes('titanium')) {
+                    properties = [
+                        ['Machinability Rating', 'Poor (20-30%)', 'Challenging due to thermal properties'],
+                        ['Recommended Cutting Speed', '30-60 m/min', 'Very low speeds required'],
+                        ['Tool Recommendation', 'Special geometry carbide', 'Designed for titanium machining'],
+                        ['Coolant Requirement', 'High pressure required', 'Critical for heat management'],
+                        ['Heat Management', 'Critical concern', 'Low thermal conductivity causes tool damage']
+                    ];
+                } else if (material.includes('brass')) {
+                    properties = [
+                        ['Machinability Rating', 'Excellent (100%)', 'One of the easiest materials to machine'],
+                        ['Recommended Cutting Speed', '300-600 m/min', 'High cutting speeds possible'],
+                        ['Tool Recommendation', '2-3 flute HSS or carbide', 'Standard tooling works well'],
+                        ['Coolant Requirement', 'Optional', 'Often machined dry or with minimal coolant'],
+                        ['Chip Control', 'Good natural characteristics', 'Forms small chips that evacuate easily']
+                    ];
+                } else if (material.includes('plastic')) {
+                    properties = [
+                        ['Machinability Rating', 'Good to Excellent', 'Low cutting forces but heat sensitive'],
+                        ['Recommended Cutting Speed', '300-600 m/min', 'Higher speeds with proper cooling'],
+                        ['Tool Recommendation', 'Sharp single or dual flute', 'Polished flutes to prevent melting'],
+                        ['Coolant Requirement', 'Air cooling recommended', 'Avoid water-based coolants for some plastics'],
+                        ['Heat Management', 'Critical concern', 'Low melting point requires careful parameter selection']
+                    ];
+                }
+                
+                // Add rows to the table
+                properties.forEach(function(prop) {
+                    const row = materialDetails.insertRow();
+                    for (let i = 0; i < 3; i++) {
+                        const cell = row.insertCell();
+                        cell.textContent = prop[i];
+                    }
+                });
+            }
+            
+            function updateProcessPlan(complexity, features, quantity) {
+                const setupCount = document.getElementById('setup-count');
+                const fixturingReq = document.getElementById('fixturing-req');
+                const machiningTime = document.getElementById('machining-time');
+                const operationSequence = document.getElementById('operation-sequence');
+                
+                // Calculate estimated setups
+                let setups = 1;
+                if (complexity > 1.5) setups = 2;
+                if (complexity > 3) setups = 3;
+                if (complexity > 4.5) setups = 4;
+                
+                // Determine fixturing requirements
+                let fixturing = '';
+                if (complexity <= 1.5) {
+                    fixturing = 'Standard vise with soft jaws';
+                } else if (complexity <= 3) {
+                    fixturing = 'Custom fixtures or multi-sided tombstone';
+                } else if (complexity <= 4) {
+                    fixturing = 'Specialized fixturing with index table or 5-axis workholding';
+                } else {
+                    fixturing = 'Complex custom fixtures with specialty clamping mechanisms';
+                }
+                
+                // Estimate machining time based on complexity and quantity
+                let baseTime = 0.5; // hours
+                if (complexity > 1.5) baseTime = 1.5;
+                if (complexity > 2.5) baseTime = 3;
+                if (complexity > 3.5) baseTime = 5;
+                if (complexity > 4.5) baseTime = 8;
+                
+                // Adjust for quantity (economies of scale)
+                let totalTime;
+                if (quantity === 1) {
+                    totalTime = baseTime;
+                } else if (quantity <= 5) {
+                    totalTime = baseTime + (baseTime * 0.7 * (quantity - 1));
+                } else if (quantity <= 20) {
+                    totalTime = baseTime + (baseTime * 0.5 * (quantity - 1));
+                } else {
+                    totalTime = baseTime + (baseTime * 0.3 * (quantity - 1));
+                }
+                
+                totalTime = Math.round(totalTime * 10) / 10; // Round to 1 decimal
+                
+                setupCount.textContent = setups;
+                fixturingReq.textContent = fixturing;
+                machiningTime.textContent = `${totalTime} hours${quantity > 1 ? ' (total)' : ''}`;
+                
+                // Clear existing operation sequence
+                operationSequence.innerHTML = '';
+                
+                // Generate operation sequence based on complexity
+                let operations = [];
+                
+                if (complexity <= 1.5) {
+                    operations = [
+                        'Setup 1: Face milling of primary datum surfaces',
+                        'Setup 1: Rough and finish machine all features',
+                        'Deburr and finish all edges'
+                    ];
+                } else if (complexity <= 2.5) {
+                    operations = [
+                        'Setup 1: Face milling of primary datum surfaces',
+                        'Setup 1: Rough and finish machine features on primary side',
+                        'Setup 2: Secure on secondary datum, machine remaining features',
+                        'Deburr and finish all edges'
+                    ];
+                } else if (complexity <= 3.5) {
+                    operations = [
+                        'Setup 1: Face milling of primary datum surfaces',
+                        'Setup 1: Rough machine primary features',
+                        'Setup 1: Drill and tap threaded holes on primary side',
+                        'Setup 2: Secure on secondary datum',
+                        'Setup 2: Rough and finish machine secondary features',
+                        'Setup 3: Custom fixture for complex angled features',
+                        'Deburr and finish all edges'
+                    ];
+                } else {
+                    operations = [
+                        'Setup 1: Create reference datums and secure mounting points',
+                        'Setup 1: Rough machine primary pockets and profiles',
+                        'Setup 2: Reposition for secondary features',
+                        'Setup 2: Rough and semi-finish secondary features',
+                        'Setup 3: Special fixture for complex angles and undercuts',
+                        'Setup 3: Machine complex geometries',
+                        'Setup 4: Final precision finishing of critical surfaces',
+                        'Secondary operations: Specialized processes as required',
+                        'Inspection and verification of critical dimensions',
+                        'Final deburring and surface treatment'
+                    ];
+                }
+                
+                // Add specialized operations based on features
+                if (features.some(f => f.type === 'thread')) {
+                    if (complexity <= 2.5) {
+                        operations.splice(2, 0, 'Setup 1: Drill and tap/thread mill all threaded features');
+                    }
+                }
+                
+                if (features.some(f => f.type === 'undercut')) {
+                    operations.push('Special operation: Machine undercuts with specialized tooling');
+                }
+                
+                // Add operations to list
+                operations.forEach(function(op) {
+                    const li = document.createElement('li');
+                    li.textContent = op;
+                    operationSequence.appendChild(li);
+                });
+            }
+            
+            function updateQualityPlan(features, tolerance, surfaceFinish) {
+                const inspectionFeatures = document.getElementById('inspection-features');
+                const inspectionMethod = document.getElementById('inspection-method');
+                
+                // Clear existing inspection features
+                inspectionFeatures.innerHTML = '';
+                
+                // Determine critical features to inspect
+                let criticalFeatures = [];
+                
+                // Add based on tolerance level
+                if (tolerance === 'it6' || tolerance === 'it7') {
+                    criticalFeatures.push('All dimensions to specified tolerances');
+                    criticalFeatures.push('GD&T callouts including position and profile tolerances');
+                }
+                
+                // Add based on surface finish
+                if (surfaceFinish <= 0.8) {
+                    criticalFeatures.push('Surface finish on all precision surfaces');
+                }
+                
+                // Add based on feature types
+                if (features.some(f => f.type === 'hole')) {
+                    criticalFeatures.push('Hole positions and diameters');
+                }
+                
+                if (features.some(f => f.type === 'thread')) {
+                    criticalFeatures.push('Thread pitch diameter and functional fit');
+                }
+                
+                if (features.some(f => f.type === 'pocket')) {
+                    criticalFeatures.push('Pocket depth and flatness');
+                }
+                
+                if (features.some(f => f.type === 'contour')) {
+                    criticalFeatures.push('Profile accuracy of contoured surfaces');
+                }
+                
+                // If no specific features found, add general ones
+                if (criticalFeatures.length === 0) {
+                    criticalFeatures = [
+                        'Overall dimensions to specified tolerances',
+                        'Surface finish on machined surfaces',
+                        'Feature positions relative to datums'
+                    ];
+                }
+                
+                // Add features to list
+                criticalFeatures.forEach(function(feature) {
+                    const li = document.createElement('li');
+                    li.textContent = feature;
+                    inspectionFeatures.appendChild(li);
+                });
+                
+                // Determine inspection method
+                let method = '';
+                if (tolerance === 'it6') {
+                    method = 'CMM for all critical dimensions, optical comparator for profiles, surface roughness tester for finish requirements';
+                } else if (tolerance === 'it7') {
+                    method = 'CMM for critical dimensions, surface roughness tester for finish requirements';
+                } else if (tolerance === 'it8') {
+                    method = 'Digital calipers and height gauge for dimensions, visual inspection with comparator for surface finish';
+                } else {
+                    method = 'Standard measuring tools (calipers, micrometers) for dimensions, visual inspection for surface finish';
+                }
+                
+                inspectionMethod.textContent = method;
+            }
+            
+            function updateCostEstimate(material, complexity, features, quantity, length, width, height) {
+                const materialCost = document.getElementById('material-cost');
+                const machineCost = document.getElementById('machine-cost');
+                const setupCost = document.getElementById('setup-cost');
+                const toolingCost = document.getElementById('tooling-cost');
+                const inspectionCost = document.getElementById('inspection-cost');
+                const totalCost = document.getElementById('total-cost');
+                const unitCost = document.getElementById('unit-cost');
+                
+                // Calculate volume in cubic mm
+                const volume = length * width * height;
+                
+                // Material cost calculation (in Indian Rupees ₹)
+                let materialCostPerUnit = 0;
+                
+                if (material.includes('aluminum')) {
+                    materialCostPerUnit = material.includes('7075') ? 0.00045 : 0.00035; // ₹/mm³
+                } else if (material.includes('steel')) {
+                    if (material.includes('stainless')) {
+                        materialCostPerUnit = 0.00055;
+                    } else {
+                        materialCostPerUnit = material.includes('4140') ? 0.00038 : 0.00025;
+                    }
+                } else if (material.includes('titanium')) {
+                    materialCostPerUnit = 0.0015;
+                } else if (material.includes('brass')) {
+                    materialCostPerUnit = 0.00045;
+                } else if (material.includes('plastic')) {
+                    materialCostPerUnit = material.includes('peek') ? 0.0009 : 0.00025;
+                }
+                
+                // Add 30% for material waste
+                let matCost = Math.round(volume * materialCostPerUnit * 1.3);
+                matCost = Math.max(matCost, 200); // Minimum material cost
+                
+                // Machine time cost calculation
+                // Base hourly rate based on machine type
+                let hourlyRate = 1200; // Basic 3-axis
+                if (complexity > 1.5) hourlyRate = 1500; // 4-axis
+                if (complexity > 2.5) hourlyRate = 2000; // 4-axis continuous
+                if (complexity > 3.5) hourlyRate = 2500; // 5-axis
+                if (complexity > 4.5) hourlyRate = 3000; // Advanced 5-axis
+                
+                // Calculate machine time (reused from process planning)
+                let baseTime = 0.5; // hours
+                if (complexity > 1.5) baseTime = 1.5;
+                if (complexity > 2.5) baseTime = 3;
+                if (complexity > 3.5) baseTime = 5;
+                if (complexity > 4.5) baseTime = 8;
+                
+                // Total machine time for all parts
+                let totalTime;
+                if (quantity === 1) {
+                    totalTime = baseTime;
+                } else if (quantity <= 5) {
+                    totalTime = baseTime + (baseTime * 0.7 * (quantity - 1));
+                } else if (quantity <= 20) {
+                    totalTime = baseTime + (baseTime * 0.5 * (quantity - 1));
+                } else {
+                    totalTime = baseTime + (baseTime * 0.3 * (quantity - 1));
+                }
+                
+                let machCost = Math.round(totalTime * hourlyRate);
+                
+                // Setup/programming cost
+                let setups = 1;
+                if (complexity > 1.5) setups = 2;
+                if (complexity > 3) setups = 3;
+                if (complexity > 4.5) setups = 4;
+                
+                let setupRate = 1000; // ₹ per setup
+                let programTime = complexity * 1.5; // hours
+                let programRate = 800; // ₹ per hour
+                
+                let setupTotal = Math.round((setups * setupRate) + (programTime * programRate));
+                
+                // Tooling cost
+                let baseTool = 500;
+                if (complexity > 2) baseTool = 1000;
+                if (complexity > 3.5) baseTool = 2000;
+                if (complexity > 4.5) baseTool = 4000;
+                
+                // Add for special features
+                if (features.some(f => f.type === 'thread')) baseTool += 500;
+                if (features.some(f => f.type === 'undercut')) baseTool += 1000;
+                
+                // For higher quantities, tooling cost per part decreases
+                let toolTotal = Math.round(baseTool / Math.min(quantity, 10));
+                
+                // Inspection cost
+                let inspectionBase = 300;
+                if (complexity > 2) inspectionBase = 600;
+                if (complexity > 3.5) inspectionBase = 1200;
+                
+                let inspTotal = Math.round(inspectionBase * Math.sqrt(quantity));
+                
+                // Update cost display
+                materialCost.textContent = `₹${matCost * quantity}`;
+                machineCost.textContent = `₹${machCost}`;
+                setupCost.textContent = `₹${setupTotal}`;
+                toolingCost.textContent = `₹${toolTotal * quantity}`;
+                inspectionCost.textContent = `₹${inspTotal}`;
+                
+                let totalAmount = (matCost * quantity) + machCost + setupTotal + (toolTotal * quantity) + inspTotal;
+                totalCost.textContent = `₹${totalAmount}`;
+                unitCost.textContent = `₹${Math.round(totalAmount / quantity)}`;
+            }
+            
+            function updateRecommendations(features, material, complexity) {
+                const recommendationList = document.getElementById('recommendation-list');
+                
+                // Clear existing recommendations
+                recommendationList.innerHTML = '';
+                
+                // Generate recommendations
+                let recommendations = [];
+                
+                // Material-specific recommendations
+                if (material.includes('aluminum')) {
+                    recommendations.push('Consider using high-speed machining strategies to maximize material removal rates');
+                    if (material.includes('7075')) {
+                        recommendations.push('Add a stress-relief operation after roughing to prevent warping');
+                    }
+                } else if (material.includes('stainless')) {
+                    recommendations.push('Use slower cutting speeds and rigid toolholding to prevent work hardening');
+                    recommendations.push('Maintain constant chip load to avoid tool failure in stainless steel');
+                } else if (material.includes('titanium')) {
+                    recommendations.push('Use specialized tooling and low cutting speeds with high feed rates');
+                    recommendations.push('Maintain sharp cutting tools and replace at the first sign of wear');
+                }
+                
+                // Feature-specific recommendations
+                if (features.some(f => f.type === 'pocket')) {
+                    recommendations.push('Consider increasing internal corner radii to match standard tool diameters (minimum 2mm recommended)');
+                    
+                    if (complexity > 3) {
+                        recommendations.push('Add 1° draft to deep pocket walls to improve surface finish and reduce tool wear');
+                    }
+                }
+                
+                if (features.some(f => f.type === 'hole')) {
+                    recommendations.push('Standardize hole diameters to minimize tool changes and setup time');
+                    
+                    if (complexity > 2.5) {
+                        recommendations.push('For deep holes, consider adding a pilot hole operation to improve accuracy');
+                    }
+                }
+                
+                if (features.some(f => f.type === 'thread')) {
+                    recommendations.push('Use thread milling rather than tapping for better thread quality and tool life');
+                }
+                
+                if (features.some(f => f.type === 'undercut')) {
+                    recommendations.push('Consider redesigning undercuts to be more manufacturing-friendly if possible');
+                }
+                
+                // General recommendations based on complexity
+                if (complexity > 3) {
+                    recommendations.push('Consider splitting the part into multiple components to simplify manufacturing');
+                }
+                
+                if (complexity > 2) {
+                    recommendations.push('Design fixturing points into the part to improve machining accuracy');
+                }
+                
+                // Add recommendations to list
+                recommendations.forEach(function(rec) {
+                    const li = document.createElement('li');
+                    li.textContent = rec;
+                    recommendationList.appendChild(li);
+                });
+            }
+            
+            function generatePDF() {
+                // First make sure the results are displayed
+                if (resultsDiv.style.display === 'none') {
+                    analyzePartForManufacturing();
+                    resultsDiv.style.display = 'block';
+                }
+                
+                // Create PDF report content
+                const reportContent = generateReportContent();
+                
+                // Create a temporary container for the PDF content
+                const pdfContainer = document.createElement('div');
+                pdfContainer.innerHTML = reportContent;
+                pdfContainer.style.display = 'none';
+                document.body.appendChild(pdfContainer);
+                
+                // Configure PDF options
+                const options = {
+                    margin: 10,
+                    filename: `CNC_Analysis_${document.getElementById('part-name').value || 'Part'}.pdf`,
+                    image: { type: 'jpeg', quality: 0.98 },
+                    html2canvas: { scale: 2, useCORS: true, logging: false },
+                    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+                };
+                
+                // Generate and download the PDF
+                html2pdf().set(options).from(pdfContainer).save().then(() => {
+                    // Remove the temporary container after PDF generation
+                    document.body.removeChild(pdfContainer);
+                });
+            }
+            
+            function generateAndDownloadReport() {
+                // Create a new window/document for the report
+                const reportWindow = window.open('', '_blank');
+                
+                // Get all the current analysis data
+                const partName = document.getElementById('part-name').value || 'Unnamed Part';
+                const materialText = document.getElementById('selected-material').textContent;
+                const complexityLevel = document.getElementById('complexity-level').textContent;
+                const primaryMachine = document.getElementById('primary-machine').textContent;
+                const operationSequence = document.getElementById('operation-sequence').innerHTML;
+                const totalCost = document.getElementById('total-cost').textContent;
+                
+                // Format current date
+                const today = new Date();
+                const dateStr = today.toLocaleDateString();
+                
+                // Create the report content
+                reportWindow.document.write(generateReportContent());
+                
+                reportWindow.document.close();
+                
+                // Trigger print after the content is loaded
+                reportWindow.onload = function() {
+                    if (confirm('Would you like to print/save this report?')) {
+                        reportWindow.print();
+                    }
+                };
+            }
+            
+            function generateReportContent() {
+                // Get all the current analysis data
+                const partName = document.getElementById('part-name').value || 'Unnamed Part';
+                const materialText = document.getElementById('selected-material').textContent;
+                const complexityLevel = document.getElementById('complexity-level').textContent;
+                const primaryMachine = document.getElementById('primary-machine').textContent;
+                const operationSequence = document.getElementById('operation-sequence').innerHTML;
+                const totalCost = document.getElementById('total-cost').textContent;
+                
+                // Format current date
+                const today = new Date();
+                const dateStr = today.toLocaleDateString();
+                
+                // Return the report HTML content
+                return `
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>CNC Manufacturing Analysis Report - ${partName}</title>
+                    <style>
+                        body {
+                            font-family: Arial, sans-serif;
+                            line-height: 1.6;
+                            max-width: 800px;
+                            margin: 0 auto;
+                            padding: 20px;
+                        }
+                        h1 {
+                            color: #2c3e50;
+                            text-align: center;
+                            border-bottom: 2px solid #3498db;
+                            padding-bottom: 10px;
+                        }
+                        h2 {
+                            color: #3498db;
+                            margin-top: 20px;
+                        }
+                        .section {
+                            margin-bottom: 30px;
+                            border: 1px solid #e0e0e0;
+                            border-radius: 5px;
+                            padding: 15px;
+                            background-color: #f9f9f9;
+                        }
+                        table {
+                            width: 100%;
+                            border-collapse: collapse;
+                            margin: 15px 0;
+                        }
+                        th, td {
+                            padding: 8px;
+                            text-align: left;
+                            border: 1px solid #ddd;
+                        }
+                        th {
+                            background-color: #f2f2f2;
+                        }
+                        .result-title {
+                            font-weight: bold;
+                            margin-bottom: 8px;
+                        }
+                        .complexity-level {
+                            display: inline-block;
+                            padding: 5px 10px;
+                            border-radius: 4px;
+                            color: white;
+                            font-weight: bold;
+                        }
+                        .report-header {
+                            display: flex;
+                            justify-content: space-between;
+                            align-items: center;
+                            margin-bottom: 20px;
+                        }
+                        .report-meta {
+                            text-align: right;
+                        }
+                        @media print {
+                            .section {
+                                break-inside: avoid;
+                                border: none;
+                                padding: 10px 0;
+                            }
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="report-header">
+                        <h1>CNC Manufacturing Analysis Report</h1>
+                        <div class="report-meta">
+                            <p><strong>Date:</strong> ${dateStr}</p>
+                            <p><strong>Reference:</strong> CNC-${Math.floor(Math.random() * 10000)}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="section">
+                        <h2>Part Information</h2>
+                        <table>
+                            <tr>
+                                <th>Parameter</th>
+                                <th>Value</th>
+                            </tr>
+                            <tr>
+                                <td>Part Name</td>
+                                <td>${partName}</td>
+                            </tr>
+                            <tr>
+                                <td>Material</td>
+                                <td>${materialText}</td>
+                            </tr>
+                            <tr>
+                                <td>Dimensions</td>
+                                <td>${document.getElementById('part-length').value || 'N/A'} × ${document.getElementById('part-width').value || 'N/A'} × ${document.getElementById('part-height').value || 'N/A'} mm</td>
+                            </tr>
+                            <tr>
+                                <td>Quantity</td>
+                                <td>${document.getElementById('quantity').value || '1'}</td>
+                            </tr>
+                            <tr>
+                                <td>Complexity Assessment</td>
+                                <td>${complexityLevel}</td>
+                            </tr>
+                        </table>
+                    </div>
+                    
+                    <div class="section">
+                        <h2>Manufacturing Strategy</h2>
+                        <div class="result-title">Recommended Machine Type</div>
+                        <p>Primary Recommendation: <strong>${primaryMachine}</strong><br>
+                        Alternative Option: ${document.getElementById('alt-machine').textContent}</p>
+                        <p>${document.getElementById('machine-details').textContent}</p>
+                        
+                        <div class="result-title">Process Plan</div>
+                        <p><strong>Estimated Setups Required:</strong> ${document.getElementById('setup-count').textContent}<br>
+                        <strong>Special Fixturing:</strong> ${document.getElementById('fixturing-req').textContent}<br>
+                        <strong>Estimated Machining Time:</strong> ${document.getElementById('machining-time').textContent}</p>
+                        
+                        <div class="result-title">Operation Sequence</div>
+                        <ol>${operationSequence}</ol>
+                    </div>
+                    
+                    <div class="section">
+                        <h2>Material Considerations</h2>
+                        ${document.getElementById('material-details').outerHTML}
+                    </div>
+                    
+                    <div class="section">
+                        <h2>Quality Control Plan</h2>
+                        <div class="result-title">Critical Features to Inspect</div>
+                        ${document.getElementById('inspection-features').outerHTML}
+                        <p><strong>Recommended Inspection Method:</strong> ${document.getElementById('inspection-method').textContent}</p>
+                    </div>
+                    
+                    <div class="section">
+                        <h2>Cost Analysis</h2>
+                        ${document.getElementById('cost-estimate').innerHTML}
+                    </div>
+                    
+                    <div class="section">
+                        <h2>Manufacturability Recommendations</h2>
+                        ${document.getElementById('recommendation-list').outerHTML}
+                    </div>
+                    
+                    <div style="text-align: center; margin-top: 40px; font-size: 12px; color: #666;">
+                        <p>Generated by CNC Machining Analyzer - Based on Comprehensive Guide to CNC Manufacturing Processes</p>
+                    </div>
+                </body>
+                </html>
+                `;
+            }
+        });
+    </script>
+</body>
+</html>
